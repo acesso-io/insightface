@@ -35,23 +35,22 @@ class PartialFC(Module):
         self.class_start: int = num_classes // world_size * rank + min(rank, num_classes % world_size)
         self.num_sample: int = int(self.sample_rate * self.num_local)
 
-        self.weight_name = os.path.join(self.prefix, "rank:{}_softmax_weight.pt".format(self.rank))
-        self.weight_mom_name = os.path.join(self.prefix, "rank:{}_softmax_weight_mom.pt".format(self.rank))
+        self.weight_name = os.path.join(self.prefix, "rank_{}_softmax_weight.pt".format(self.rank))
+        self.weight_mom_name = os.path.join(self.prefix, "rank_{}_softmax_weight_mom.pt".format(self.rank))
 
         if resume:
             try:
                 self.weight: torch.Tensor = torch.load(self.weight_name)
-                logging.info("softmax weight resume successfully!")
-            except (FileNotFoundError, KeyError, IndexError):
-                self.weight = torch.normal(0, 0.01, (self.num_local, self.embedding_size), device=self.device)
-                logging.info("softmax weight resume fail!")
-
-            try:
                 self.weight_mom: torch.Tensor = torch.load(self.weight_mom_name)
+                if self.weight.shape[0] != self.num_local or self.weight_mom.shape[0] != self.num_local:
+                    raise IndexError
+                logging.info("softmax weight resume successfully!")
                 logging.info("softmax weight mom resume successfully!")
             except (FileNotFoundError, KeyError, IndexError):
+                self.weight = torch.normal(0, 0.01, (self.num_local, self.embedding_size), device=self.device)
                 self.weight_mom: torch.Tensor = torch.zeros_like(self.weight)
-                logging.info("softmax weight mom resume fail!")
+                logging.info("softmax weight init!")
+                logging.info("softmax weight mom init!")
         else:
             self.weight = torch.normal(0, 0.01, (self.num_local, self.embedding_size), device=self.device)
             self.weight_mom: torch.Tensor = torch.zeros_like(self.weight)
@@ -153,10 +152,9 @@ class PartialFC(Module):
         logits.backward(grad)
         if total_features.grad is not None:
             total_features.grad.detach_()
-        x_grad: torch.Tensor = torch.zeros_like(features)
-        x_grad.mul_(self.world_size)
-
+        x_grad: torch.Tensor = torch.zeros_like(features, requires_grad=True)
         # feature gradient all-reduce
         dist.reduce_scatter(x_grad, list(total_features.grad.chunk(self.world_size, dim=0)))
+        x_grad = x_grad * self.world_size
         # backward backbone
         return x_grad, loss_v
