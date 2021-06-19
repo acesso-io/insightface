@@ -102,9 +102,13 @@ def train_net():
 
     data_shape = (3, config.image_size, config.image_size)
 
+    logger.warning(f"config.debug {config.debug}")
+
     # We equally store the class centers (softmax linear transformation matrix) on all GPUs in order.
     num_local = (config.num_classes + size - 1) // size
     num_sample = int(num_local * config.sample_ratio)
+    logger.warning(f"num_local {num_local}")
+    logger.warning(f"num_sample {num_sample}")
     memory_bank = MemoryBank(
         num_sample=num_sample,
         num_local=num_local,
@@ -115,6 +119,7 @@ def train_net():
         gpu=True)
 
     if config.debug:
+        logger.warning("dummy itter")
         train_iter = DummyIter(config.batch_size, data_shape, 1000 * 10000)
     else:
         train_iter = FaceImageIter(
