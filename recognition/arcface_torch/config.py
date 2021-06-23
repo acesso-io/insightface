@@ -1,15 +1,16 @@
 from easydict import EasyDict as edict
 
 config = edict()
-config.dataset = "ms1m-retinaface-t1"
+#TODO: wtf is this dataset: config.dataset = "ms1m-retinaface-t1"
+config.dataset = "emore"
 config.embedding_size = 512
 config.sample_rate = 1
-config.fp16 = False
+config.fp16 = True
 config.momentum = 0.9
 config.weight_decay = 5e-4
-config.batch_size = 64
+config.batch_size = 32 # TODO: was 64
 config.lr = 0.1  # batch size is 512
-config.output = "ms1mv3_arcface_r50"
+config.output = "emore_arcface_r50_take_one"
 
 if config.dataset == "emore":
     config.rec = "/train_tmp/faces_emore"

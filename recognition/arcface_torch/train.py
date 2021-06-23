@@ -93,16 +93,23 @@ def main(args):
     callback_verification = CallBackVerification(2000, rank, cfg.val_targets, cfg.rec)
     callback_logging = CallBackLogging(50, rank, total_step, cfg.batch_size, world_size, None)
     callback_checkpoint = CallBackModelCheckpoint(rank, cfg.output)
+    print("Callbacks are working...")
+
 
     loss = AverageMeter()
     global_step = 0
     grad_amp = MaxClipGradScaler(cfg.batch_size, 128 * cfg.batch_size, growth_interval=100) if cfg.fp16 else None
     for epoch in range(start_epoch, cfg.num_epoch):
+        print("epoch", epoch)
         train_sampler.set_epoch(epoch)
+        # print("train_samples, setted eppoch")
         for step, (img, label) in enumerate(train_loader):
             global_step += 1
+            # print(f"will get image {img.shape} features")
             features = F.normalize(backbone(img))
+            # print("module_partial_fc.forward_backward")
             x_grad, loss_v = module_partial_fc.forward_backward(label, features, opt_pfc)
+            # print("backward?")
             if cfg.fp16:
                 features.backward(grad_amp.scale(x_grad))
                 grad_amp.unscale_(opt_backbone)

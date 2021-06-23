@@ -363,6 +363,7 @@ def train_net(args):
 
     ver_list = []
     ver_name_list = []
+    print("gonna load val datasets...")
     for name in config.val_targets:
         path = os.path.join(data_dir, name + ".bin")
         if os.path.exists(path):

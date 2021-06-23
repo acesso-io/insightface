@@ -101,6 +101,8 @@ class MXFaceDataset(Dataset):
         sample = mx.image.imdecode(img).asnumpy()
         if self.transform is not None:
             sample = self.transform(sample)
+
+        # print("sample", sample, "label", label)
         return sample, label
 
     def __len__(self):
