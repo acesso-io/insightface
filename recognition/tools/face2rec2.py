@@ -103,7 +103,7 @@ def image_encode(args, i, item, q_out):
     else:
         header = mx.recordio.IRHeader(item.flag, item.label, item.id, 0)
         #print('write', item.flag, item.id, item.label)
-        s = mx.recordio.pack(header, '')
+        s = mx.recordio.pack(header, b'')
         q_out.put((i, s, oitem))
 
 
@@ -256,6 +256,7 @@ if __name__ == '__main__':
             for fname in os.listdir(working_dir)
             if os.path.isfile(os.path.join(working_dir, fname))
         ]
+        print("files", files)
         count = 0
         for fname in files:
             if fname.startswith(args.prefix) and fname.endswith('.lst'):
