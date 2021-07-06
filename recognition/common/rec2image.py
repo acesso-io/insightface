@@ -17,8 +17,12 @@ def main(args):
     include_datasets = args.include.split(',')
     rec_list = []
     for ds in include_datasets:
-        path_imgrec = os.path.join(ds, 'train.rec')
-        path_imgidx = os.path.join(ds, 'train.idx')
+        # import pdb; pdb.set_trace()
+        f = filter(None, ds.split('/'))
+        ds_name = list(f)[-1]
+
+        path_imgrec = os.path.join(ds, f'{ds_name}.rec')
+        path_imgidx = os.path.join(ds, f'{ds_name}.idx')
         imgrec = mx.recordio.MXIndexedRecordIO(path_imgidx, path_imgrec, 'r')  # pylint: disable=redefined-variable-type
         rec_list.append(imgrec)
     if not os.path.exists(args.output):
