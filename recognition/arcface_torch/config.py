@@ -2,7 +2,7 @@ from easydict import EasyDict as edict
 
 config = edict()
 #TODO: wtf is this dataset: config.dataset = "ms1m-retinaface-t1"
-config.dataset = "emore"
+config.dataset = "webface260m_100"
 config.embedding_size = 512
 config.sample_rate = 1
 config.fp16 = True
@@ -10,7 +10,7 @@ config.momentum = 0.9
 config.weight_decay = 5e-4
 config.batch_size = 32 # TODO: was 64
 config.lr = 0.1  # batch size is 512
-config.output = "emore_arcface_r50_take_one"
+config.output = "out_train/webface260m_100_arcface_r50_take_one"
 
 if config.dataset == "emore":
     config.rec = "/train_tmp/faces_emore"
@@ -80,3 +80,16 @@ elif config.dataset == "webface":
             [m for m in [20, 28, 32] if m - 1 <= epoch])
     config.lr_func = lr_step_func
 
+elif config.dataset == "webface260m_100":
+    config.rec = "/train_tmp/WebFace260M_100"
+    config.num_classes = 100
+    config.num_image = 2022 #"forget"
+    config.num_epoch = 100
+    config.warmup_epoch = -1
+    config.val_targets = ["lfw"]
+
+    # TODO: no ideia if this lr_step_func is the right one
+    def lr_step_func(epoch):
+        return ((epoch + 1) / (4 + 1)) ** 2 if epoch < -1 else 0.1 ** len(
+            [m for m in [11, 17, 22] if m - 1 <= epoch])
+    config.lr_func = lr_step_func
